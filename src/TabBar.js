@@ -21,7 +21,7 @@ import type {
 } from './TabViewTypeDefinitions';
 
 type IndicatorProps<T> = SceneRendererProps<T> & {
-  width: Animated.Value,
+  width: number,
 };
 
 type ScrollEvent = {
@@ -252,6 +252,7 @@ export default class TabBar<T: Route<*>> extends React.PureComponent<
     Animated.timing(this.state.offset, {
       toValue: 0,
       duration: 150,
+      useNativeDriver: this.props.useNativeDriver,
     }).start();
   };
 
@@ -284,6 +285,7 @@ export default class TabBar<T: Route<*>> extends React.PureComponent<
         toValue: -scrollOffset,
         tension: 300,
         friction: 35,
+        useNativeDriver: this.props.useNativeDriver,
       }).start();
     } else {
       this.state.offset.setValue(-scrollOffset);
@@ -363,7 +365,7 @@ export default class TabBar<T: Route<*>> extends React.PureComponent<
         >
           {this._renderIndicator({
             ...this.props,
-            width: new Animated.Value(finalTabWidth),
+            width: finalTabWidth,
           })}
         </Animated.View>
         <View style={styles.scroll}>

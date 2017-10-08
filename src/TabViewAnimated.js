@@ -15,18 +15,24 @@ import type {
   Style,
 } from './TabViewTypeDefinitions';
 
+type PagerRenderer<T> = (
+  props: SceneRendererProps<T> & {
+    panX: Animated.Value,
+    offsetX: Animated.Value,
+  }
+) => React.Element<any>;
+
 type Props<T> = PagerProps & {
   navigationState: NavigationState<T>,
   onIndexChange: (index: number) => void,
   onPositionChange?: ({ value: number }) => void,
   initialLayout?: Layout,
   canJumpToTab?: (route: T) => boolean,
-  renderPager: (
-    props: SceneRendererProps<T> & PagerProps
-  ) => React.Element<any>,
+  renderPager: PagerRenderer<T>,
   renderScene: (props: SceneRendererProps<T> & Scene<T>) => ?React.Element<any>,
   renderHeader?: (props: SceneRendererProps<T>) => ?React.Element<any>,
   renderFooter?: (props: SceneRendererProps<T>) => ?React.Element<any>,
+  useNativeDriver?: boolean,
   lazy?: boolean,
   style?: Style,
 };
@@ -36,7 +42,8 @@ type State = {
   layout: Layout & {
     measured: boolean,
   },
-  position: Animated.Value,
+  panX: Animated.Value,
+  offsetX: Animated.Value,
 };
 
 let TabViewPager;
@@ -74,23 +81,28 @@ export default class TabViewAnimated<T: Route<*>> extends React.Component<
   };
 
   static defaultProps = {
-    renderPager: (props: SceneRendererProps<*>) => <TabViewPager {...props} />,
+    renderPager: props => <TabViewPager {...props} />,
     initialLayout: {
       height: 0,
       width: 0,
     },
+    useNativeDriver: false,
   };
 
   constructor(props: Props<T>) {
     super(props);
 
+    const { navigationState } = this.props;
+    const layout = {
+      ...this.props.initialLayout,
+      measured: false,
+    };
+
     this.state = {
-      loaded: [this.props.navigationState.index],
-      layout: {
-        ...this.props.initialLayout,
-        measured: false,
-      },
-      position: new Animated.Value(this.props.navigationState.index),
+      loaded: [navigationState.index],
+      layout,
+      panX: new Animated.Value(0),
+      offsetX: new Animated.Value(-navigationState.index * layout.width),
     };
   }
 
@@ -98,14 +110,16 @@ export default class TabViewAnimated<T: Route<*>> extends React.Component<
 
   componentDidMount() {
     this._mounted = true;
-    this._positionListener = this.state.position.addListener(
-      this._trackPosition
-    );
+    // TODO
+    // this._positionListener = this.state.position.addListener(
+    //   this._trackPosition
+    // );
   }
 
   componentWillUnmount() {
     this._mounted = false;
-    this.state.position.removeListener(this._positionListener);
+    // TODO
+    // this.state.position.removeListener(this._positionListener);
   }
 
   _mounted: boolean = false;
@@ -171,6 +185,7 @@ export default class TabViewAnimated<T: Route<*>> extends React.Component<
       return;
     }
 
+    this.state.offsetX.setValue(-this.props.navigationState.index * width);
     this.setState({
       layout: {
         measured: true,
@@ -181,13 +196,22 @@ export default class TabViewAnimated<T: Route<*>> extends React.Component<
   };
 
   _buildSceneRendererProps = (): SceneRendererProps<*> => {
+    const maxPosition = this.props.navigationState.routes.length - 1;
     return {
       layout: this.state.layout,
       navigationState: this.props.navigationState,
-      position: this.state.position,
+      position: Animated.divide(
+        Animated.add(this.state.panX, this.state.offsetX),
+        -Math.max(this.state.layout.width, 0.1)
+      ).interpolate({
+        inputRange: [0, maxPosition],
+        outputRange: [0, maxPosition],
+        extrapolate: 'clamp',
+      }),
       jumpToIndex: this._jumpToIndex,
       getLastPosition: this._getLastPosition,
       subscribe: this._addSubscription,
+      useNativeDriver: this.props.useNativeDriver === true,
     };
   };
 
@@ -258,6 +282,8 @@ export default class TabViewAnimated<T: Route<*>> extends React.Component<
         {renderPager({
           ...props,
           ...rest,
+          panX: this.state.panX,
+          offsetX: this.state.offsetX,
           children: navigationState.routes.map((route, index) =>
             this._renderScene({
               ...props,

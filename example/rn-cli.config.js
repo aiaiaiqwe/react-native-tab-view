@@ -9,7 +9,12 @@ module.exports = {
     return [__dirname, path.resolve(__dirname, '..')];
   },
   getProvidesModuleNodeModules() {
-    return ['react-native', 'react', 'prop-types'];
+    return [
+      'prop-types',
+      'react-native-gesture-handler',
+      'react-native',
+      'react',
+    ];
   },
   getBlacklistRE() {
     return blacklist([

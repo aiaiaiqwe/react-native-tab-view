@@ -21,6 +21,9 @@ it('renders all children', () => {
       jumpToIndex={jest.fn()}
       getLastPosition={jest.fn()}
       subscribe={jest.fn()}
+      panX={new Animated.Value(0)}
+      offsetX={new Animated.Value(0)}
+      useNativeDriver={false}
     >
       <View />
       <View />

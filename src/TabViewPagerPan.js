@@ -10,9 +10,9 @@ import {
   View,
   I18nManager,
 } from 'react-native';
-import { SceneRendererPropType } from './TabViewPropTypes';
+import { PagerRendererPropType } from './TabViewPropTypes';
 import type {
-  SceneRendererProps,
+  PagerRendererProps,
   Route,
   TransitionConfigurator,
 } from './TabViewTypeDefinitions';
@@ -46,38 +46,32 @@ type GestureState = {
 
 type GestureHandler = (event: GestureEvent, state: GestureState) => void;
 
-type Props<T> = SceneRendererProps<T> & {
+type Props<T> = PagerRendererProps<T> & {
   configureTransition: TransitionConfigurator,
-  animationEnabled?: boolean,
-  swipeEnabled?: boolean,
   swipeDistanceThreshold: number,
   swipeVelocityThreshold: number,
   onSwipeStart?: GestureHandler,
   onSwipeEnd?: GestureHandler,
-  children?: React.Node,
 };
 
 const DEAD_ZONE = 12;
 
 const DefaultTransitionSpec = {
   timing: Animated.spring,
-  tension: 300,
-  friction: 35,
+  tension: 15,
+  friction: 5,
 };
 
 export default class TabViewPagerPan<T: Route<*>> extends React.Component<
   Props<T>
 > {
   static propTypes = {
-    ...SceneRendererPropType,
+    ...PagerRendererPropType,
     configureTransition: PropTypes.func.isRequired,
-    animationEnabled: PropTypes.bool,
-    swipeEnabled: PropTypes.bool,
     swipeDistanceThreshold: PropTypes.number.isRequired,
     swipeVelocityThreshold: PropTypes.number.isRequired,
     onSwipeStart: PropTypes.func,
     onSwipeEnd: PropTypes.func,
-    children: PropTypes.node,
   };
 
   static defaultProps = {

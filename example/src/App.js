@@ -19,6 +19,7 @@ import BottomBarIconTextExample from './BottomBarIconTextExample';
 import NoAnimationExample from './NoAnimationExample';
 import ScrollViewsExample from './ScrollViewsExample';
 import CoverflowExample from './CoverflowExample';
+import NativeDriverExample from './NativeDriverExample';
 
 const PERSISTENCE_KEY = 'index_persistence';
 
@@ -29,6 +30,7 @@ const EXAMPLE_COMPONENTS = [
   NoAnimationExample,
   ScrollViewsExample,
   CoverflowExample,
+  NativeDriverExample,
 ];
 
 type State = {
